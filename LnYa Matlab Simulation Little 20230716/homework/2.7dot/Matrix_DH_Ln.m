@@ -17,7 +17,10 @@ d=Link(i).dz;         %d               %distance between xi and xi-1
 Link(i).n=[C,S,0,0]';
 Link(i).o=[-1*S*Ca,C*Ca,Sa,0]';
 Link(i).a=[S*Sa, -1*C*Sa,Ca,0]';
-Link(i).p=[a*C,a*S,d,1]';
+Link(i).p=[a*C,a*S,d,1]';           %关节i到关节i+1的坐标变换
 
+%旋转矩阵     描述连杆的姿态（旋转），用于计算速度、加速度或坐标变换
 Link(i).R=[Link(i).n(1:3),Link(i).o(1:3),Link(i).a(1:3)];
-Link(i).A=[Link(i).n,Link(i).o,Link(i).a,Link(i).p];
+
+%齐次变换矩阵 同时描述连杆的 ​姿态（旋转）​ 和 ​位置（平移）​，用于正运动学计算
+Link(i).A=[Link(i).n,Link(i).o,Link(i).a,Link(i).p];     
