@@ -1,13 +1,7 @@
 close all;
 clear;
-% 获取当前脚本所在的目录
-currentDir = fileparts(mfilename('fullpath'));  % 自动获取当前脚本路径
 
-% 定义依赖文件夹的相对路径
-dependDir = fullfile(currentDir, '..', 'depend');  % 假设依赖文件夹在上级目录
 
-% 添加依赖路径到 MATLAB 搜索路径
-addpath(dependDir);
 global Link
 Build_6DOFRobot_Lnya; 
 

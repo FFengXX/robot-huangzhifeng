@@ -1,7 +1,6 @@
 close all;
 clear;
 
-
 ToDeg = 180/pi;
 ToRad = pi/180;
 
