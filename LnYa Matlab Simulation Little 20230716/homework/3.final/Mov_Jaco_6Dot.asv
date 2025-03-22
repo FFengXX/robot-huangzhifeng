@@ -31,8 +31,10 @@ function [all_xyz2, xout, t] = MOVE_vector(times,print, len_x, len_y, len_z)
     % 主循环
     for i = 1:times
         cla(gca);  
-        if print == true
+        if(print == blue)
             plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:), 'b.', 'MarkerSize', 10);
+        else if(print == blue)
+                
         end
 
         % 计算当前状态
@@ -44,7 +46,7 @@ function [all_xyz2, xout, t] = MOVE_vector(times,print, len_x, len_y, len_z)
             error('预分配空间不足，请扩大 all_coordinates 的列数');
         end
 
-        if print ~=false
+        if(print ~=none)
             all_coordinates(:, current_index:current_index+times-1) = all_xyz;
         end
 
@@ -64,8 +66,7 @@ function [all_xyz2, xout, t] = MOVE_vector(times,print, len_x, len_y, len_z)
         th6 = th6 + dth(6) * 180/pi;
         
         drawnow limitrate;
-end
-
+    end
     if(print)
         fprintf('x= %f, y= %f, z= %f\n', xyz(1), xyz(2), xyz(3));
     end
@@ -94,6 +95,7 @@ MOVE_vector(100,true, -10000, 0, 0);
 MOVE_vector(100,true, 0, 20000, 0);  
 MOVE_vector(100,true, 0, 0, -20000);  
 MOVE_vector(100,true, 0, -20000, 0);  
+MOVE_vector(100,true, 0, 0, 20000); 
 end
 workspace();
 
