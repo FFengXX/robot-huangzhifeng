@@ -17,26 +17,20 @@ clear;
 
 figure; 
 
-% th1=0;
-% th2=0;
-% th3=0;
-% th4=0;
-% th5=0;
-% th6=0;
+ th1=0;
+ th2=90;
+ th3=0;
+ th4=0;
+ th5=0;
+ th6=0;
 
-th1=50;
-th2=-10;
-th3=-90;
-th4=30;
-th5=60;
-th6=90;
 
-DHfk_J_Puma560_Lnya(th1,th2,th3,th4,th5,th6,0); %
+DHfk6Dof_Lnya(th1,th2,th3,th4,th5,th6,0); %
 pause;
 num=1;
 for i=1:20
     figure(1);   
-    DHfk_J_Puma560_Lnya(th1,th2,th3,th4,th5,th6,0);%
+    DHfk6Dof_Lnya(th1,th2,th3,th4,th5,th6,0);%
     J=Jacobian6DoF_Ln(th1,th2,th3,th4,th5,th6); 
     x=det(J) ;fprintf('x= %2.4f ',x);  
     xout(num)=x;
@@ -44,7 +38,7 @@ for i=1:20
     num=num+1;
     
     % dD=[20 0 0 0 0 0]';
-    dD=[20 0 0 0 0 0]';
+    dD=[80 0 0 0 0 0]';
     dth=inv(J)*dD;
     th1=th1+dth(1)/pi*180;
     th2=th2+dth(2)/pi*180;
