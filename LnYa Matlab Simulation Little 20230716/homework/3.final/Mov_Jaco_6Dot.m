@@ -14,8 +14,8 @@ all_coordinates = zeros(3, 100000);  % 轨迹存储数组
 corner_points = zeros(3, 8);        % 角点存储数组（固定8列）
 corner_index = 1;                    % 新增：角点索引计数器
 
-% ================== 新增函数：生成工作空间和小球 ==================
-function generate_workspace(corner_points)
+% ================== 修改后的generate_workspace函数 ==================
+function rand_points = generate_workspace(corner_points)
     % 计算工作空间范围
     x_lim = [min(corner_points(1,:)), max(corner_points(1,:))];
     y_lim = [min(corner_points(2,:)), max(corner_points(2,:))];
@@ -129,8 +129,17 @@ function workspace()
     MOVE_vector(100, true, 0, 0, -20000);     % 角点7
     MOVE_vector(100, true, 0, -20000, 0);     % 角点8
     
-    % 生成工作空间
-    generate_workspace(corner_points);
+
+    % 生成工作空间并获取小球坐标
+    rand_points = generate_workspace(corner_points);
+    
+    % 打印到控制台
+    fprintf('\n======= 随机小球坐标 =======\n');
+    for i = 1:size(rand_points,2)
+        fprintf('小球 %d: x=%.2f, y=%.2f, z=%.2f\n',...
+                i, rand_points(1,i), rand_points(2,i), rand_points(3,i));
+    end
+    fprintf('============================\n');
 end
 
 % ================== 主程序 ==================
