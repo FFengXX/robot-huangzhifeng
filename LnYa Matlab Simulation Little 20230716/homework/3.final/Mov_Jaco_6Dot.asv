@@ -60,31 +60,6 @@ function [all_xyz2, xout, t] = MOVE(times, step_x, step_y, step_z)
     current_index = current_index + times;
     all_xyz2 = all_xyz;  % 返回本次轨迹数据（可选）
 end
-function workspace()
-
-end
-% 调用MOVE函数（自动更新全局变量）
-
-MOVE(100, 0, 100, 0);  
-MOVE(100, 0, 0, -100);  
-MOVE(100, 0, -100, 0);  
-MOVE(100, 0, 0, 100);  
-
-
-MOVE(100, -100, 0, 0);  % X轴负向移动
-MOVE(100, 0, 0, -100);  % Z轴负向移动
-MOVE(100, 100, 0, 0);   % X轴正向移动
-
-MOVE(100, 0, 100, 0);  
-MOVE(100, -100, 0, 0);  
-MOVE(100, 0, -100, 0); 
-MOVE(100, 0, 100, 0); 
-MOVE(100, 0, 0, 100);
-MOVE(100, 100, 0, 0);  
-MOVE(100, -100, 0, 0);  
-MOVE(100, 0, -100, 0);  
-
-
 
 
 
@@ -96,3 +71,5 @@ axis equal;
 grid on;
 xlabel('x'); ylabel('y'); zlabel('z');
 title('累积轨迹');
+
+
