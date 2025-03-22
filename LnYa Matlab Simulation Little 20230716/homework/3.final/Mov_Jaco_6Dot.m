@@ -1,6 +1,6 @@
 close all;
 clear;
-global th1 th2 th3 th4 th5 th6 all_coordinates current_index;
+global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index;
 
 % 初始化全局变量
 th1 = 0;
@@ -9,21 +9,55 @@ th3 = 0;
 th4 = 0;
 th5 = 0;
 th6 = 0;
-current_index = 1;  % 当前存储位置索引
-%all_coordinates = zeros(3, 400);  % 预分配总空间（4次×100点）
-all_coordinates = zeros(3, 100000);  % 预分配总空间（4次×100点）
-% 首次绘制初始状态
-xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
+current_index = 1;
+all_coordinates = zeros(3, 100000);  % 轨迹存储数组
+corner_points = zeros(3, 8);        % 角点存储数组（固定8列）
+corner_index = 1;                    % 新增：角点索引计数器
 
-function [all_xyz2, xout, t] = MOVE_vector(times,print, len_x, len_y, len_z)
-    global th1 th2 th3 th4 th5 th6 all_coordinates current_index;
+% ================== 新增函数：生成工作空间和小球 ==================
+function generate_workspace(corner_points)
+    % 计算工作空间范围
+    x_lim = [min(corner_points(1,:)), max(corner_points(1,:))];
+    y_lim = [min(corner_points(2,:)), max(corner_points(2,:))];
+    z_lim = [min(corner_points(3,:)), max(corner_points(3,:))];
+    
+    % 生成7个随机黄色小球
+    num_balls = 7;
+    rand_points = [
+        x_lim(1) + (x_lim(2)-x_lim(1))*rand(1,num_balls);
+        y_lim(1) + (y_lim(2)-y_lim(1))*rand(1,num_balls);
+        z_lim(1) + (z_lim(2)-z_lim(1))*rand(1,num_balls)
+    ];
+    
+    % 绘制
+    figure;
+    
+    % 1. 绘制工作空间框架
+    plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); hold on;
+    plot3(corner_points(1,[5:8 5]), corner_points(2,[5:8 5]), corner_points(3,[5:8 5]), 'b-');
+    for i = 1:4
+        plot3([corner_points(1,i), corner_points(1,i+4)],...
+              [corner_points(2,i), corner_points(2,i+4)],...
+              [corner_points(3,i), corner_points(3,i+4)], 'b-');
+    end
+    
+    % 2. 绘制黄色小球
+    scatter3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
+             100, 'y', 'filled', 'MarkerEdgeColor','k');
+    
+    axis equal; grid on;
+    xlabel('x'); ylabel('y'); zlabel('z');
+    title('Workspace with Random Balls');
+end
+
+% ================== 修改后的MOVE_vector函数 ==================
+function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z)
+    global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index;
     
     step_x = len_x/times;
     step_y = len_y/times;
     step_z = len_z/times;
 
-
-    % 预分配内存
     xout = zeros(1, times);
     t = 1:times;
     all_xyz = zeros(3, times);
@@ -31,30 +65,22 @@ function [all_xyz2, xout, t] = MOVE_vector(times,print, len_x, len_y, len_z)
     % 主循环
     for i = 1:times
         cla(gca);  
-        if print == true
+        if print
             plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:), 'b.', 'MarkerSize', 10);
         end
-
-        % 计算当前状态
+        
         xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
         all_xyz(:, i) = xyz;
         
-        % 更新全局轨迹数组
-        if current_index + times - 1 > size(all_coordinates, 2)
-            error('预分配空间不足，请扩大 all_coordinates 的列数');
-        end
-
-        if print ~=false
+        if print
             all_coordinates(:, current_index:current_index+times-1) = all_xyz;
         end
 
-        % 计算雅可比矩阵
         J = Jacobian6DoF_Ln(th1, th2, th3, th4, th5, th6); 
         xout(i) = det(J);
         
-        % 逆运动学更新
         dD = [step_x, step_y, step_z, 0, 0, 0]';
-        dth = pinv(J) * dD;  % 改用伪逆提高稳定性
+        dth = pinv(J) * dD;
         
         th1 = th1 + dth(1) * 180/pi;
         th2 = th2 + dth(2) * 180/pi;
@@ -64,45 +90,48 @@ function [all_xyz2, xout, t] = MOVE_vector(times,print, len_x, len_y, len_z)
         th6 = th6 + dth(6) * 180/pi;
         
         drawnow limitrate;
-end
-
+    end
+    
+    % ========== 修复：安全的角点存储逻辑 ==========
+    if print
+        if corner_index > size(corner_points, 2)
+            error('角点数量超过预分配空间，请扩大corner_points数组');
+        end
+        corner_points(:, corner_index) = xyz;  % 按顺序存储角点
+        corner_index = corner_index + 1;       % 索引递增
+    end
+    % ============================================
+    
     if(print)
         fprintf('x= %f, y= %f, z= %f\n', xyz(1), xyz(2), xyz(3));
     end
-    % 更新存储索引
-    current_index = current_index + times;
-    all_xyz2 = all_xyz;  % 返回本次轨迹数据（可选）
+    
+    if print
+        current_index = current_index + times;
+    end
+    all_xyz2 = all_xyz;
 end
 
-%MOVE_vector(100,3000,3000,3000);
-%MOVE_vector(100,-6000,-6000,-6000);
-
-
-
-% 调用MOVE函数（自动更新全局变量）
-%初始位置调整
+% ================== 修改后的workspace函数 ==================
 function workspace()
-MOVE_vector(100,false, 4000, 0, 0); 
-
-MOVE_vector(100,true, 0, 10000, 0);  
-MOVE_vector(100,true, 0, 0, -20000);  
-MOVE_vector(100,true, 0, -20000, 0);  
-MOVE_vector(100,true, 0, 0, 20000); 
-
-MOVE_vector(100,true, -10000, 0, 0); 
-
-MOVE_vector(100,true, 0, 20000, 0);  
-MOVE_vector(100,true, 0, 0, -20000);  
-MOVE_vector(100,true, 0, -20000, 0);  
+    global corner_points;
+    
+    % 初始化位置（不记录角点）
+    MOVE_vector(100, false, 3000, 0, 0); 
+    
+    % 执行8次轨迹运动（记录角点）
+    MOVE_vector(100, true, 0, 10000, 0);      % 角点1
+    MOVE_vector(100, true, 0, 0, -20000);     % 角点2
+    MOVE_vector(100, true, 0, -20000, 0);    % 角点3
+    MOVE_vector(100, true, 0, 0, 20000);      % 角点4
+    MOVE_vector(100, true, -10000, 0, 0);     % 角点5
+    MOVE_vector(100, true, 0, 20000, 0);      % 角点6
+    MOVE_vector(100, true, 0, 0, -20000);     % 角点7
+    MOVE_vector(100, true, 0, -20000, 0);     % 角点8
+    
+    % 生成工作空间
+    generate_workspace(corner_points);
 end
+
+% ================== 主程序 ==================
 workspace();
-
-
-% 绘制全局轨迹
-figure;
-plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:),...
-      'r.', 'MarkerSize', 10);
-axis equal;
-grid on;
-xlabel('x'); ylabel('y'); zlabel('z');
-title('累积轨迹');
