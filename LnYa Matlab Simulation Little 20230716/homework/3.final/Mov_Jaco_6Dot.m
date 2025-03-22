@@ -29,11 +29,12 @@ function rand_points = generate_workspace(corner_points)
         z_lim(1) + (z_lim(2)-z_lim(1))*rand(1,num_balls)
     ];
     
-    % 绘制
-    figure;
+    % 获取当前figure1的句柄并保持绘图
+    figure(1); 
+    hold on;
     
     % 1. 绘制工作空间框架
-    plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); hold on;
+    plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); 
     plot3(corner_points(1,[5:8 5]), corner_points(2,[5:8 5]), corner_points(3,[5:8 5]), 'b-');
     for i = 1:4
         plot3([corner_points(1,i), corner_points(1,i+4)],...
