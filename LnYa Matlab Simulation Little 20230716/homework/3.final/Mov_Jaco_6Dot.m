@@ -58,9 +58,20 @@ function generate_workspace(corner_points)
 end
 
 % ================== 修改后的MOVE_vector函数 ==================
-function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z)
-    global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index;
-    
+function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner)
+    global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index rand_points;
+
+    % 设置默认参数（当record_corner未输入时默认为false）
+    if nargin < 6
+        record_corner = false;
+    end
+
+    % 动态生成小球位置（如果未初始化）
+    if isempty(rand_points)
+        warning('rand_points未初始化，生成默认位置');
+        rand_points = zeros(3,7);  % 生成7个原点位置
+    end
+
     step_x = len_x/times;
     step_y = len_y/times;
     step_z = len_z/times;
@@ -73,8 +84,16 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z)
     for i = 1:times
         cla(gca);  
         if print
+            % 绘制轨迹
             plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:), 'b.');
+            % 动态绘制当前小球位置
+            plot3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
+                 'oy', 'MarkerSize', 12,...
+                 'MarkerFaceColor', 'y',...
+                 'MarkerEdgeColor', 'k',...
+                 'LineWidth', 1.5);
         end
+        
         
         xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
         all_xyz(:, i) = xyz;
@@ -100,12 +119,15 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z)
     end
     
     % ========== 角点存储逻辑 ==========
-    if print
+    if record_corner  % 使用新参数控制角点记录
         if corner_index > size(corner_points, 2)
             error('角点数量超过预分配空间，请扩大corner_points数组');
         end
         corner_points(:, corner_index) = xyz;
         corner_index = corner_index + 1;
+        
+        fprintf('[角点记录] 新增点%d: (%.1f, %.1f, %.1f)\n',...
+                corner_index-1, xyz(1), xyz(2), xyz(3));
     end
     
     if(print)
@@ -117,35 +139,64 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z)
     end
     all_xyz2 = all_xyz;
 end
-
 % ================== 修改后的workspace函数 ==================
 function workspace()
     global corner_points rand_points;
     
-    % 初始化位置（不记录角点）
-    MOVE_vector(100, false, 3000, 0, 0); 
+    % 初始化位置（不记录轨迹和角点）
+    MOVE_vector(100, false, 3000, 0, 0, false); 
     
-    % 执行8次轨迹运动（记录角点）
-    MOVE_vector(100, true, 0, 10000, 0);
-    MOVE_vector(100, true, 0, 0, -20000);
-    MOVE_vector(100, true, 0, -20000, 0);
-    MOVE_vector(100, true, 0, 0, 20000);
-    MOVE_vector(100, true, -10000, 0, 0);
-    MOVE_vector(100, true, 0, 20000, 0);
-    MOVE_vector(100, true, 0, 0, -20000);
-    MOVE_vector(100, true, 0, -20000, 0);
+    % 执行8次边界运动（记录轨迹和角点）
+    MOVE_vector(100, true, 0, 10000, 0, true);
+    MOVE_vector(100, true, 0, 0, -20000, true);
+    MOVE_vector(100, true, 0, -20000, 0, true);
+    MOVE_vector(100, true, 0, 0, 20000, true);
+    MOVE_vector(100, true, -10000, 0, 0, true);
+    MOVE_vector(100, true, 0, 20000, 0, true);
+    MOVE_vector(100, true, 0, 0, -20000, true);
+    MOVE_vector(100, true, 0, -20000, 0, true);
 
-    % 生成工作空间（自动保存小球坐标到rand_points）
+    % 生成工作空间
     generate_workspace(corner_points);
     
-    % 打印全局存储的小球坐标
-    fprintf('\n======= 随机小球坐标 =======\n');
-    for i = 1:size(rand_points,2)
-        fprintf('小球 %d: x=%.2f, y=%.2f, z=%.2f\n',...
-                i, rand_points(1,i), rand_points(2,i), rand_points(3,i));
+    % 打印角点坐标
+    fprintf('\n======= 工作空间角点坐标 =======\n');
+    for i = 1:size(corner_points,2)
+        fprintf('角点%d: x=%.1f, y=%.1f, z=%.1f\n',...
+                i, corner_points(1,i), corner_points(2,i), corner_points(3,i));
     end
-    fprintf('============================\n');
 end
+
+
+function move_to_target(target_x, target_y, target_z)
+    global th1 th2 th3 th4 th5 th6;
+    
+    % 获取当前坐标
+    current_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
+    
+    % 计算位移
+    dx = target_x - current_xyz(1);
+    dy = target_y - current_xyz(2);
+    dz = target_z - current_xyz(3);
+    
+    % 执行运动（不记录轨迹和角点）
+    MOVE_vector(100, true, dx, dy, dz, false);
+    
+    % 验证最终位置
+    final_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
+    fprintf('\n目标点: (%.1f, %.1f, %.1f)\n实际到达: (%.1f, %.1f, %.1f)\n误差: %.2fmm\n',...
+            target_x, target_y, target_z,...
+            final_xyz(1), final_xyz(2), final_xyz(3),...
+            norm(final_xyz - [target_x; target_y; target_z]));
+end
+
 
 % ================== 主程序 ==================
 workspace();
+move_to_target(rand_points(1,1), rand_points(2,1), rand_points(3,1));  % 移动到第一个小球位置
+move_to_target(rand_points(1,2), rand_points(2,2), rand_points(3,2));  % 移动到第2个小球位置
+move_to_target(rand_points(1,3), rand_points(2,3), rand_points(3,3));  % 移动到第3个小球位置
+move_to_target(rand_points(1,4), rand_points(2,4), rand_points(3,4));  % 移动到第4个小球位置
+move_to_target(rand_points(1,5), rand_points(2,5), rand_points(3,5));  % 移动到第5个小球位置
+move_to_target(rand_points(1,6), rand_points(2,6), rand_points(3,6));  % 移动到第6个小球位置
+move_to_target(rand_points(1,7), rand_points(2,7), rand_points(3,7));  % 移动到第7个小球位置
