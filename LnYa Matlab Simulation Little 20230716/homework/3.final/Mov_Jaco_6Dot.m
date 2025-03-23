@@ -1,6 +1,6 @@
 close all;
 clear;
-global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index;
+global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index rand_points;
 
 % 初始化全局变量
 th1 = 0;
@@ -12,16 +12,19 @@ th6 = 0;
 current_index = 1;
 all_coordinates = zeros(3, 100000);  % 轨迹存储数组
 corner_points = zeros(3, 8);        % 角点存储数组（固定8列）
-corner_index = 1;                    % 新增：角点索引计数器
+corner_index = 1;                    % 角点索引计数器
+rand_points = [];                   % 新增：小球坐标全局变量
 
 % ================== 修改后的generate_workspace函数 ==================
-function rand_points = generate_workspace(corner_points)
+function generate_workspace(corner_points)
+    global rand_points;  % 声明全局变量
+    
     % 计算工作空间范围
     x_lim = [min(corner_points(1,:)), max(corner_points(1,:))];
     y_lim = [min(corner_points(2,:)), max(corner_points(2,:))];
     z_lim = [min(corner_points(3,:)), max(corner_points(3,:))];
     
-    % 生成7个随机黄色小球
+    % 生成7个随机黄色小球并存储到全局变量
     num_balls = 7;
     rand_points = [
         x_lim(1) + (x_lim(2)-x_lim(1))*rand(1,num_balls);
@@ -43,8 +46,11 @@ function rand_points = generate_workspace(corner_points)
     end
     
     % 2. 绘制黄色小球
-    scatter3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
-             100, 'y', 'filled', 'MarkerEdgeColor','k');
+    plot3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
+         'oy', 'MarkerSize', 12,...
+         'MarkerFaceColor', 'y',...
+         'MarkerEdgeColor', 'k',...
+         'LineWidth', 1.5);
     
     axis equal; grid on;
     xlabel('x'); ylabel('y'); zlabel('z');
@@ -67,7 +73,7 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z)
     for i = 1:times
         cla(gca);  
         if print
-            plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:), 'b.', 'MarkerSize', 10);
+            plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:), 'b.');
         end
         
         xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
@@ -93,15 +99,14 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z)
         drawnow limitrate;
     end
     
-    % ========== 修复：安全的角点存储逻辑 ==========
+    % ========== 角点存储逻辑 ==========
     if print
         if corner_index > size(corner_points, 2)
             error('角点数量超过预分配空间，请扩大corner_points数组');
         end
-        corner_points(:, corner_index) = xyz;  % 按顺序存储角点
-        corner_index = corner_index + 1;       % 索引递增
+        corner_points(:, corner_index) = xyz;
+        corner_index = corner_index + 1;
     end
-    % ============================================
     
     if(print)
         fprintf('x= %f, y= %f, z= %f\n', xyz(1), xyz(2), xyz(3));
@@ -115,26 +120,25 @@ end
 
 % ================== 修改后的workspace函数 ==================
 function workspace()
-    global corner_points;
+    global corner_points rand_points;
     
     % 初始化位置（不记录角点）
     MOVE_vector(100, false, 3000, 0, 0); 
     
     % 执行8次轨迹运动（记录角点）
-    MOVE_vector(100, true, 0, 10000, 0);      % 角点1
-    MOVE_vector(100, true, 0, 0, -20000);     % 角点2
-    MOVE_vector(100, true, 0, -20000, 0);    % 角点3
-    MOVE_vector(100, true, 0, 0, 20000);      % 角点4
-    MOVE_vector(100, true, -10000, 0, 0);     % 角点5
-    MOVE_vector(100, true, 0, 20000, 0);      % 角点6
-    MOVE_vector(100, true, 0, 0, -20000);     % 角点7
-    MOVE_vector(100, true, 0, -20000, 0);     % 角点8
-    
+    MOVE_vector(100, true, 0, 10000, 0);
+    MOVE_vector(100, true, 0, 0, -20000);
+    MOVE_vector(100, true, 0, -20000, 0);
+    MOVE_vector(100, true, 0, 0, 20000);
+    MOVE_vector(100, true, -10000, 0, 0);
+    MOVE_vector(100, true, 0, 20000, 0);
+    MOVE_vector(100, true, 0, 0, -20000);
+    MOVE_vector(100, true, 0, -20000, 0);
 
-    % 生成工作空间并获取小球坐标
-    rand_points = generate_workspace(corner_points);
+    % 生成工作空间（自动保存小球坐标到rand_points）
+    generate_workspace(corner_points);
     
-    % 打印到控制台
+    % 打印全局存储的小球坐标
     fprintf('\n======= 随机小球坐标 =======\n');
     for i = 1:size(rand_points,2)
         fprintf('小球 %d: x=%.2f, y=%.2f, z=%.2f\n',...
