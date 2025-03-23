@@ -58,12 +58,12 @@ function generate_workspace(corner_points)
 end
 
 % ================== 修改后的MOVE_vector函数 ==================
-function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner)
+function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
     global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index rand_points;
 
-    % 设置默认参数（当record_corner未输入时默认为false）
-    if nargin < 6
-        record_corner = false;
+    % 设置默认参数（新增colour参数）
+    if nargin < 7
+        colour = 'b';  % 默认颜色为蓝色
     end
 
     % 动态生成小球位置（如果未初始化）
@@ -84,8 +84,9 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, re
     for i = 1:times
         cla(gca);  
         if print
-            % 绘制轨迹
-            plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:), 'b.');
+            % 使用colour参数设置轨迹颜色
+            plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:),...
+                 [colour '.'], 'MarkerSize', 5);  % 修改此行
             % 动态绘制当前小球位置
             plot3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
                  'oy', 'MarkerSize', 12,...
@@ -93,7 +94,6 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, re
                  'MarkerEdgeColor', 'k',...
                  'LineWidth', 1.5);
         end
-        
         
         xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
         all_xyz(:, i) = xyz;
@@ -147,14 +147,14 @@ function workspace()
     MOVE_vector(100, false, 3000, 0, 0, false); 
     
     % 执行8次边界运动（记录轨迹和角点）
-    MOVE_vector(100, true, 0, 10000, 0, true);
-    MOVE_vector(100, true, 0, 0, -20000, true);
-    MOVE_vector(100, true, 0, -20000, 0, true);
-    MOVE_vector(100, true, 0, 0, 20000, true);
-    MOVE_vector(100, true, -10000, 0, 0, true);
-    MOVE_vector(100, true, 0, 20000, 0, true);
-    MOVE_vector(100, true, 0, 0, -20000, true);
-    MOVE_vector(100, true, 0, -20000, 0, true);
+    MOVE_vector(100, true, 0, 10000, 0, true,'b');
+    MOVE_vector(100, true, 0, 0, -20000, true,'b');
+    MOVE_vector(100, true, 0, -20000, 0, true,'b');
+    MOVE_vector(100, true, 0, 0, 20000, true,'b');
+    MOVE_vector(100, true, -10000, 0, 0, true,'b');
+    MOVE_vector(100, true, 0, 20000, 0, true,'b');
+    MOVE_vector(100, true, 0, 0, -20000, true,'b');
+    MOVE_vector(100, true, 0, -20000, 0, true,'b');
 
     % 生成工作空间
     generate_workspace(corner_points);
@@ -180,7 +180,7 @@ function move_to_target(target_x, target_y, target_z)
     dz = target_z - current_xyz(3);
     
     % 执行运动（不记录轨迹和角点）
-    MOVE_vector(100, true, dx, dy, dz, false);
+    MOVE_vector(100, true, dx, dy, dz, false,'g');
     
     % 验证最终位置
     final_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
