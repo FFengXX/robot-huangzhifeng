@@ -17,7 +17,7 @@ for th1 = 1:1:1
             % for th5 = -130:65:130
             % for th6 = -360:120:360
             % if((th2==25 && th3>-90 && th3<=160) ||(th3==-90 && th2>25 && th2<175)||(th2==175 && th3>-90 && th3<160)||(th3==90 && th3>=25 && th3<=175)||(th3==160 && th2>=25 && th2<=175))
-            DHfk6Dof_Lnya(th1,th2,d3,0,0,0,1); 
+            DHfk6Dof_Lnya(th1,th2,d3,0,0,0,0,1); 
             x(num)=Link(7).p(1);
             y(num)=Link(7).p(2);
             z(num)=Link(7).p(3);

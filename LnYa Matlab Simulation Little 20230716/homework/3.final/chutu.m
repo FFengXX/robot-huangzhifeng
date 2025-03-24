@@ -47,6 +47,6 @@ end
 figure;
 scatter3(points(:,1), points(:,2), points(:,3), 1, 'b.', 'MarkerEdgeAlpha', 0.3);
 xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)');
-title('IRB4600工作空间点云');
+title('工作空间点云');
 axis equal;
 grid on;

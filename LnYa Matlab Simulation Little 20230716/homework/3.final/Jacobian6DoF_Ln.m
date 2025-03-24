@@ -1,8 +1,8 @@
-function J=Jacobian6DoF_Ln(th1,th2,th3,th4,th5,th6)
+function J=Jacobian6DoF_Ln(th1,th2,th3,th4,th5,th6,th7)
 % close all
 global Link
 
-jsize=6;
+jsize=7;
 J=zeros(6,jsize);
 
 Link(2).th=th1*pi/180;
@@ -11,13 +11,14 @@ Link(4).th=th3*pi/180;
 Link(5).th=th4*pi/180;
 Link(6).th=th5*pi/180;
 Link(7).th=th6*pi/180;
+Link(8).th=th7*pi/180;
 
-for i=1:7
+for i=1:8
     Matrix_DH_Ln(i);
 end
 
 Link(1).p=Link(1).p(1:3);
-for i=2:7
+for i=2:8
     Link(i).A=Link(i-1).A*Link(i).A;
     Link(i).p= Link(i).A(1:3,4);
     Link(i).n= Link(i).A(:,1);

@@ -1,6 +1,6 @@
 close all;
 clear;
-global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index rand_points;
+global th1 th2 th3 th4 th5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
 
 % 初始化全局变量
 th1 = 0;
@@ -9,6 +9,7 @@ th3 = 0;
 th4 = 0;
 th5 = 0;
 th6 = 0;
+th7 = 0;
 current_index = 1;
 all_coordinates = zeros(3, 100000);  % 轨迹存储数组
 corner_points = zeros(3, 8);        % 角点存储数组（固定8列）
@@ -58,11 +59,11 @@ function generate_workspace(corner_points)
 end
 
 % ================== 修改后的MOVE_vector函数 ==================
-function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
-    global th1 th2 th3 th4 th5 th6 all_coordinates current_index corner_points corner_index rand_points;
+function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
+    global th1 th2 th3 th4 th5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
 
     % 设置默认参数（新增colour参数）
-    if nargin < 7
+    if nargin < 8
         colour = 'b';  % 默认颜色为蓝色
     end
 
@@ -76,7 +77,6 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, re
     step_y = len_y/times;
     step_z = len_z/times;
 
-    xout = zeros(1, times);
     t = 1:times;
     all_xyz = zeros(3, times);
     
@@ -95,15 +95,14 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, re
                  'LineWidth', 1.5);
         end
         
-        xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
+        xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6,th7, 0);
         all_xyz(:, i) = xyz;
         
         if print
             all_coordinates(:, current_index:current_index+times-1) = all_xyz;
         end
 
-        J = Jacobian6DoF_Ln(th1, th2, th3, th4, th5, th6); 
-        xout(i) = det(J);
+        J = Jacobian6DoF_Ln(th1, th2, th3, th4, th5, th6,th7); 
         
         dD = [step_x, step_y, step_z, 0, 0, 0]';
         dth = pinv(J) * dD;
@@ -114,7 +113,7 @@ function [all_xyz2, xout, t] = MOVE_vector(times, print, len_x, len_y, len_z, re
         th4 = th4 + dth(4) * 180/pi;
         th5 = th5 + dth(5) * 180/pi;
         th6 = th6 + dth(6) * 180/pi;
-        
+        th7 = th7 + dth(7) * 180/pi;
         drawnow limitrate;
     end
     
@@ -169,10 +168,10 @@ end
 
 
 function move_to_target(target_x, target_y, target_z)
-    global th1 th2 th3 th4 th5 th6;
+    global th1 th2 th3 th4 th5 th6 th7;
     
     % 获取当前坐标
-    current_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
+    current_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6,th7, 0);
     
     % 计算位移
     dx = target_x - current_xyz(1);
@@ -183,7 +182,7 @@ function move_to_target(target_x, target_y, target_z)
     MOVE_vector(100, true, dx, dy, dz, false,'g');
     
     % 验证最终位置
-    final_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6, 0);
+    final_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6,th7, 0);
     fprintf('\n目标点: (%.1f, %.1f, %.1f)\n实际到达: (%.1f, %.1f, %.1f)\n误差: %.2fmm\n',...
             target_x, target_y, target_z,...
             final_xyz(1), final_xyz(2), final_xyz(3),...

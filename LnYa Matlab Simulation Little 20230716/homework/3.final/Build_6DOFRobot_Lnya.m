@@ -18,9 +18,9 @@ Link(2) = struct('name', 'J1',    'th', 90*ToRad, 'dz', 4950,  'dx', 1750,  'alf
 Link(3) = struct('name', 'J2',    'th', 90*ToRad, 'dz', 0,    'dx', 9000,  'alf', 0,        'az', UZ);  % 2 TO 3
 Link(4) = struct('name', 'J3',    'th', 0*ToRad,  'dz', 0,    'dx', 1750,  'alf', 90*ToRad, 'az', UZ);  % 3 TO 4
 Link(5) = struct('name', 'J4',    'th', 0*ToRad,  'dz', 9600,  'dx', 0,    'alf', -90*ToRad,'az', UZ);  % 4 TO 5
-Link(6) = struct('name', 'J5',    'th', 0*ToRad,  'dz', 0,    'dx', 0,    'alf', 90*ToRad, 'az', UZ);  % 5 TO 6
-Link(7) = struct('name', 'J6',    'th', 0*ToRad,  'dz', 1350,  'dx', 0,    'alf', 0*ToRad,  'az', UZ);  % 6 TO 7
-
-Link(8) = struct('name', 'Footf', 'th', -90*ToRad,'dz', 40,   'dx', 0,    'alf', 0*ToRad,  'az', UZ);  % 末端
+Link(6) = struct('name', 'J5',    'th', 0*ToRad,  'dz', 5000,    'dx', 0,    'alf', 90*ToRad, 'az', UZ);  % 5 TO 6
+Link(7) = struct('name', 'J6',    'th', 0*ToRad,  'dz', 1000,  'dx', 0,    'alf', 0*ToRad,  'az', UZ);  % 6 TO 7
+Link(7) = struct('name', 'J7',    'th', 0*ToRad,  'dz', 0,  'dx', 10000,    'alf', 0*ToRad,  'az', UZ);  % 6 TO 7
+Link(8) = struct('name', 'Footf', 'th', -90*ToRad,'dz', 400,   'dx', 0,    'alf', 0*ToRad,  'az', UZ);  % 末端
 
 % Link(9) = struct('name', 'Footb', 'th', 0*ToRad,  'dz', 0,    'dx', 60,   'alf', 0*ToRad,  'az', UZ);  % Footb（注释）
