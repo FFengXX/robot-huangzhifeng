@@ -1,4 +1,4 @@
-function ret=DHfk6Dof_Lnya(th1,th2,th3,th4,th5,th6,th7,fcla)
+function ret=DHfk6Dof_Lnya(th1,th2,th3,th4,d5,th6,th7,fcla)
 global Link
 
 Build_6DOFRobot_Lnya;
@@ -12,13 +12,13 @@ Link(2).th=th1*pi/180;
 Link(3).th=th2*pi/180;
 Link(4).th=th3*pi/180;
 Link(5).th=th4*pi/180;
-Link(6).th=th5*pi/180;
+Link(6).th=d5;
 Link(7).th=th6*pi/180;
 Link(8).th=th7*pi/180;
 
 p0=[0,0,0]';
 
-for i=1:9
+for i=1:8
     Matrix_DH_Ln(i);
 end
 

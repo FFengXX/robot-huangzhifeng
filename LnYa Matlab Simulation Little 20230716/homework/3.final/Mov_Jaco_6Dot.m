@@ -1,13 +1,13 @@
 close all;
 clear;
-global th1 th2 th3 th4 th5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
+global th1 th2 th3 th4 d5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
 
 % 初始化全局变量
 th1 = 0;
 th2 = 90;
 th3 = 0;
 th4 = 0;
-th5 = 0;
+d5 = 0;
 th6 = 0;
 th7 = 0;
 current_index = 1;
@@ -60,7 +60,7 @@ end
 
 % ================== 修改后的MOVE_vector函数 ==================
 function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
-    global th1 th2 th3 th4 th5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
+    global th1 th2 th3 th4 d5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
 
     % 设置默认参数（新增colour参数）
     if nargin < 8
@@ -95,14 +95,14 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
                  'LineWidth', 1.5);
         end
         
-        xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6,th7, 0);
+        xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, d5, th6,th7, 0);
         all_xyz(:, i) = xyz;
         
         if print
             all_coordinates(:, current_index:current_index+times-1) = all_xyz;
         end
 
-        J = Jacobian6DoF_Ln(th1, th2, th3, th4, th5, th6,th7); 
+        J = Jacobian6DoF_Ln(th1, th2, th3, th4, d5, th6,th7); 
         
         dD = [step_x, step_y, step_z, 0, 0, 0]';
         dth = pinv(J) * dD;
@@ -111,7 +111,7 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
         th2 = th2 + dth(2) * 180/pi;
         th3 = th3 + dth(3) * 180/pi;
         th4 = th4 + dth(4) * 180/pi;
-        th5 = th5 + dth(5) * 180/pi;
+        d5 = d5 + dth(5);
         th6 = th6 + dth(6) * 180/pi;
         th7 = th7 + dth(7) * 180/pi;
         drawnow limitrate;
@@ -143,17 +143,17 @@ function workspace()
     global corner_points rand_points;
     
     % 初始化位置（不记录轨迹和角点）
-    MOVE_vector(100, false, 3000, 0, 0, false); 
+    MOVE_vector(100, false, 600, 600, 0, false); 
     
     % 执行8次边界运动（记录轨迹和角点）
-    MOVE_vector(100, true, 0, 10000, 0, true,'b');
-    MOVE_vector(100, true, 0, 0, -20000, true,'b');
-    MOVE_vector(100, true, 0, -20000, 0, true,'b');
-    MOVE_vector(100, true, 0, 0, 20000, true,'b');
-    MOVE_vector(100, true, -10000, 0, 0, true,'b');
-    MOVE_vector(100, true, 0, 20000, 0, true,'b');
-    MOVE_vector(100, true, 0, 0, -20000, true,'b');
-    MOVE_vector(100, true, 0, -20000, 0, true,'b');
+    MOVE_vector(100, true, 0, 1000, 0, true,'b');
+    MOVE_vector(100, true, 0, 0, -2000, true,'b');
+    MOVE_vector(100, true, 0, -2000, 0, true,'b');
+    MOVE_vector(100, true, 0, 0, 2000, true,'b');
+    MOVE_vector(100, true, -1000, 0, 0, true,'b');
+    MOVE_vector(100, true, 0, 2000, 0, true,'b');
+    MOVE_vector(100, true, 0, 0, -2000, true,'b');
+    MOVE_vector(100, true, 0, -2000, 0, true,'b');
 
     % 生成工作空间
     generate_workspace(corner_points);
@@ -168,10 +168,10 @@ end
 
 
 function move_to_target(target_x, target_y, target_z)
-    global th1 th2 th3 th4 th5 th6 th7;
+    global th1 th2 th3 th4 d5 th6 th7;
     
     % 获取当前坐标
-    current_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6,th7, 0);
+    current_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, d5, th6,th7, 0);
     
     % 计算位移
     dx = target_x - current_xyz(1);
@@ -182,7 +182,7 @@ function move_to_target(target_x, target_y, target_z)
     MOVE_vector(100, true, dx, dy, dz, false,'g');
     
     % 验证最终位置
-    final_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, th5, th6,th7, 0);
+    final_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, d5, th6,th7, 0);
     fprintf('\n目标点: (%.1f, %.1f, %.1f)\n实际到达: (%.1f, %.1f, %.1f)\n误差: %.2fmm\n',...
             target_x, target_y, target_z,...
             final_xyz(1), final_xyz(2), final_xyz(3),...

@@ -1,4 +1,4 @@
-function J=Jacobian6DoF_Ln(th1,th2,th3,th4,th5,th6,th7)
+function J=Jacobian6DoF_Ln(th1,th2,th3,th4,d5,th6,th7)
 % close all
 global Link
 
@@ -9,7 +9,7 @@ Link(2).th=th1*pi/180;
 Link(3).th=th2*pi/180;
 Link(4).th=th3*pi/180;
 Link(5).th=th4*pi/180;
-Link(6).th=th5*pi/180;
+Link(6).th=d5;
 Link(7).th=th6*pi/180;
 Link(8).th=th7*pi/180;
 
