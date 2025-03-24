@@ -26,7 +26,7 @@ function generate_workspace(corner_points)
     z_lim = [min(corner_points(3,:)), max(corner_points(3,:))];
     
     % 生成7个随机黄色小球并存储到全局变量
-    num_balls = 7;
+    num_balls = 10;
     rand_points = [
         x_lim(1) + (x_lim(2)-x_lim(1))*rand(1,num_balls);
         y_lim(1) + (y_lim(2)-y_lim(1))*rand(1,num_balls);
@@ -70,7 +70,7 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
     % 动态生成小球位置（如果未初始化）
     if isempty(rand_points)
         warning('rand_points未初始化，生成默认位置');
-        rand_points = zeros(3,7);  % 生成7个原点位置
+        rand_points = zeros(3,10);  % 生成7个原点位置
     end
 
     step_x = len_x/times;
@@ -192,10 +192,7 @@ end
 
 % ================== 主程序 ==================
 workspace();
-move_to_target(rand_points(1,1), rand_points(2,1), rand_points(3,1));  % 移动到第一个小球位置
-move_to_target(rand_points(1,2), rand_points(2,2), rand_points(3,2));  % 移动到第2个小球位置
-move_to_target(rand_points(1,3), rand_points(2,3), rand_points(3,3));  % 移动到第3个小球位置
-move_to_target(rand_points(1,4), rand_points(2,4), rand_points(3,4));  % 移动到第4个小球位置
-move_to_target(rand_points(1,5), rand_points(2,5), rand_points(3,5));  % 移动到第5个小球位置
-move_to_target(rand_points(1,6), rand_points(2,6), rand_points(3,6));  % 移动到第6个小球位置
-move_to_target(rand_points(1,7), rand_points(2,7), rand_points(3,7));  % 移动到第7个小球位置
+% 使用循环简化代码（适用于任意数量的小球）
+for i = 1:size(rand_points,2)
+    move_to_target(rand_points(1,i), rand_points(2,i), rand_points(3,i));
+end
