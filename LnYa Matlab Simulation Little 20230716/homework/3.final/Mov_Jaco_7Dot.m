@@ -207,14 +207,14 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
                   'LineWidth', 1.5);
         end
         
-        xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, d5, th6,th7, 0);
+        xyz = DHfk7Dof_Lnya(th1, th2, th3, th4, d5, th6,th7, 0);
         all_xyz(:, i) = xyz;
         
         if print
             all_coordinates(:, current_index:current_index+times-1) = all_xyz;
         end
 
-        J = Jacobian6DoF_Ln(th1, th2, th3, th4, d5, th6,th7); 
+        J = Jacobian7DoF_Ln(th1, th2, th3, th4, d5, th6,th7); 
         
         dD = [step_x, step_y, step_z, 0, 0, 0]';
         dth = pinv(J) * dD;
@@ -284,7 +284,7 @@ function move_to_target(target_x, target_y, target_z)
     global th1 th2 th3 th4 d5 th6 th7 rand_points;
     
     % 获取当前坐标
-    current_xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, d5, th6, th7, 0);
+    current_xyz = DHfk7Dof_Lnya(th1, th2, th3, th4, d5, th6, th7, 0);
     
     % RRT参数设置
     start = current_xyz;

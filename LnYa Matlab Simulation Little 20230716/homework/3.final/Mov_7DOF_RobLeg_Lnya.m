@@ -12,7 +12,7 @@ th4=0;
 th5=0;
 th6=0;
 th7=0;
-DHfk6Dof_Lnya(th1,th2,th3,th4,th5,th6,th7,0);
+DHfk7Dof_Lnya(th1,th2,th3,th4,th5,th6,th7,0);
 view(134,12);
 pause;
 stp=30;

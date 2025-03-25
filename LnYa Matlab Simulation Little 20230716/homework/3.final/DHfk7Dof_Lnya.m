@@ -1,7 +1,7 @@
-function ret=DHfk6Dof_Lnya(th1,th2,th3,th4,d5,th6,th7,fcla)
+function ret=DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7,fcla)
 global Link
 
-Build_6DOFRobot_Lnya;
+Build_7DOFRobot_Lnya;
 radius = 40;
 len = 100;
 joint_col = 0;

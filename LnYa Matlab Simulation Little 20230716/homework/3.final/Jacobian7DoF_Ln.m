@@ -1,4 +1,4 @@
-function J=Jacobian6DoF_Ln(th1,th2,th3,th4,d5,th6,th7)
+function J=Jacobian7DoF_Ln(th1,th2,th3,th4,d5,th6,th7)
 % close all
 global Link
 
