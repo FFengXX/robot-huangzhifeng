@@ -1,6 +1,6 @@
 close all;
 clear;
-global th1 th2 th3 th4 d5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
+global th1 th2 th3 th4 d5 th6 th7 garbage_points all_coordinates current_index corner_points corner_index rand_points;
 
 % 初始化全局变量
 th1 = 0;
@@ -15,6 +15,8 @@ all_coordinates = zeros(3, 100000);  % 轨迹存储数组
 corner_points = zeros(3, 8);        % 角点存储数组（固定8列）
 corner_index = 1;                    % 角点索引计数器
 rand_points = [];                   % 新增：小球坐标全局变量
+
+garbage_points = [300, 400, 400];  % 行向量
 
 % ================== 修改后的generate_workspace函数 ==================
 function generate_workspace(corner_points)
@@ -60,7 +62,7 @@ end
 
 % ================== 修改后的MOVE_vector函数 ==================
 function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
-    global th1 th2 th3 th4 d5 th6 th7 all_coordinates current_index corner_points corner_index rand_points;
+    global th1 th2 th3 th4 d5 th6 th7 all_coordinates garbage_points current_index corner_points corner_index rand_points;
 
     % 设置默认参数（新增colour参数）
     if nargin < 8
@@ -93,6 +95,14 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
                  'MarkerFaceColor', 'y',...
                  'MarkerEdgeColor', 'k',...
                  'LineWidth', 1.5);
+
+            %绘制垃圾桶位置
+            plot3(garbage_points(1), garbage_points(2), garbage_points(3),...
+                  's',...  % 方形标记（s = square）
+                  'MarkerSize', 30,...
+                  'MarkerFaceColor', 'g',...
+                  'MarkerEdgeColor', 'k',...
+                  'LineWidth', 1.5);
         end
         
         xyz = DHfk6Dof_Lnya(th1, th2, th3, th4, d5, th6,th7, 0);
@@ -189,10 +199,35 @@ function move_to_target(target_x, target_y, target_z)
             norm(final_xyz - [target_x; target_y; target_z]));
 end
 
-
+function sort_rand_points_by_distance()
+    global rand_points garbage_points;
+    
+    % 计算每个小球到垃圾桶的欧氏距离
+    distances = sqrt(...
+        (rand_points(1,:) - garbage_points(1)).^2 + ...
+        (rand_points(2,:) - garbage_points(2)).^2 + ...
+        (rand_points(3,:) - garbage_points(3)).^2 ...
+    );
+    
+    % 按距离从小到大排序，获取排序后的索引
+    [~, sorted_indices] = sort(distances);
+    
+    % 按排序后的索引重新排列小球坐标
+    rand_points = rand_points(:, sorted_indices);
+    
+    % 打印排序结果（可选）
+    fprintf('\n======= 按距离排序后的小球坐标 =======\n');
+    for i = 1:size(rand_points,2)
+        fprintf('小球%d: 距离=%.2fmm, 坐标=(%.1f, %.1f, %.1f)\n',...
+                i, distances(sorted_indices(i)),...
+                rand_points(1,i), rand_points(2,i), rand_points(3,i));
+    end
+end
 % ================== 主程序 ==================
 workspace();
-% 使用循环简化代码（适用于任意数量的小球）
+sort_rand_points_by_distance();  % 按距离排序小球
+
 for i = 1:size(rand_points,2)
     move_to_target(rand_points(1,i), rand_points(2,i), rand_points(3,i));
 end
+move_to_target(garbage_points(1),garbage_points(2),garbage_points(3));
