@@ -20,7 +20,7 @@ Link(4) = struct('name', 'J3',    'th', 0*ToRad,  'dz', 0,    'dx', 500,  'alf',
 Link(5) = struct('name', 'J4',    'th', 0*ToRad,  'dz', 500,  'dx', 0,    'alf', -90*ToRad,'az', UZ);  % 4 TO 5
 Link(6) = struct('name', 'J5',    'th', 0*ToRad,  'dz', 500,    'dx', 0,    'alf', 90*ToRad, 'az', UZ);  % 5 TO 6
 Link(7) = struct('name', 'J6',    'th', 0*ToRad,  'dz', 500,  'dx', 0,    'alf', 0*ToRad,  'az', UZ);  % 6 TO 7
-Link(7) = struct('name', 'J7',    'th', 0*ToRad,  'dz', 0,  'dx', 1000,    'alf', 0*ToRad,  'az', UZ);  % 6 TO 7
-Link(8) = struct('name', 'Footf', 'th', -90*ToRad,'dz', 400,   'dx', 0,    'alf', 0*ToRad,  'az', UZ);  % 末端
+Link(8) = struct('name', 'J7',    'th', 0*ToRad,  'dz', 0,  'dx', 1000,    'alf', 0*ToRad,  'az', UZ);  % 7 TO 8
+Link(9) = struct('name', 'Footf', 'th', -90*ToRad,'dz', 400,   'dx', 0,    'alf', 0*ToRad,  'az', UZ);  % 末端
 
 % Link(9) = struct('name', 'Footb', 'th', 0*ToRad,  'dz', 0,    'dx', 60,   'alf', 0*ToRad,  'az', UZ);  % Footb（注释）

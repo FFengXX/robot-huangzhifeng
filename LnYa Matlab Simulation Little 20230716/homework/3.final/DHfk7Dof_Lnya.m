@@ -12,17 +12,18 @@ Link(2).th=th1*pi/180;
 Link(3).th=th2*pi/180;
 Link(4).th=th3*pi/180;
 Link(5).th=th4*pi/180;
-Link(6).th=d5;
+Link(6).dz=d5;
 Link(7).th=th6*pi/180;
 Link(8).th=th7*pi/180;
 
+
 p0=[0,0,0]';
 
-for i=1:8
+for i=1:9
     Matrix_DH_Ln(i);
 end
 
-for i=2:8
+for i=2:9
     Link(i).A=Link(i-1).A*Link(i).A;
     Link(i).p= Link(i).A(:,4);
     Link(i).n= Link(i).A(:,1);
@@ -32,14 +33,14 @@ for i=2:8
 
 
     Connect3D(Link(i-1).p,Link(i).p,'r',2); hold on;% 连接相邻连杆的线段
-    if i<9
+    if i<10
         DrawCylinder(Link(i-1).p, Link(i-1).R * Link(i).az, radius,len, joint_col); hold on; % 绘制关节圆柱体
     end
 end
 
 % 在绘制完所有连杆后添加以下代码（在for循环之后）：
 % Link(8).p 是末端执行器的位置（4x1齐次坐标）
-end_effector_pos = Link(8).p(1:3);  % 提取x,y,z坐标
+end_effector_pos = Link(9).p(1:3);  % 提取x,y,z坐标
 %plot3(end_effector_pos(1), end_effector_pos(2), end_effector_pos(3), 'ro');
 
 grid on;
