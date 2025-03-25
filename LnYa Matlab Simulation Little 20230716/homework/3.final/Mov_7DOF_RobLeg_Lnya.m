@@ -80,27 +80,39 @@ for i=1200:-stp:0
     end 
 end
 
+% for i=-200:stp:200
+%   DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6+i,th7,1);
+% end
+% for i=200:-stp:-200
+%     if i==-200
+%       DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6+i,th7,0);
+% 
+%     else
+%       DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6+i,th7,1);
+%     end 
+% end
+
 for i=-200:stp:200
-  DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6+i,th7,1);
+  DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7+i,1);
 end
 for i=200:-stp:-200
     if i==-200
-      DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6+i,th7,0);
-
-    else
-      DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6+i,th7,1);
-    end 
-end
-
-for i=-400:stp:400
-  DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7+i,1);
-end
-for i=400:-stp:-400
-    if i==-400
       DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7+i,0);
 
     else
       DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7+i,1);
+    end 
+end
+
+for i=-200:stp:200
+  DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7,1);
+end
+for i=200:-stp:-200
+    if i==-200
+      DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7,0);
+
+    else
+      DHfk7Dof_Lnya(th1,th2,th3,th4,d5,th6,th7,1);
     end 
 end
 % %% 微分运动测试雅可比矩阵
