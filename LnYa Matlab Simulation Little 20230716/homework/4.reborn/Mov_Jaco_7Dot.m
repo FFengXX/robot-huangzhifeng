@@ -1,7 +1,6 @@
 close all;
 clear;
-global th1 th2 th3 d4 th5 th6 th7 garbage_points all_coordinates current_index corner_points corner_index rand_points;
-
+global th1 th2 th3 d4 th5 th6 th7 garbage_points all_coordinates current_index corner_points corner_index rand_points captured_joint_angles;
 % 初始化全局变量
 th1=0;
 th2=90;
@@ -12,11 +11,14 @@ th6=0;
 th7=-90;
 current_index = 1;
 all_coordinates = zeros(3, 100000);  % 轨迹存储数组
-corner_points = zeros(3, 8);        % 角点存储数组（固定8列）
-corner_index = 1;                    % 角点索引计数器
-rand_points = [];                   % 新增：小球坐标全局变量
+corner_points = [1532, 532, 532, 1532, 1532, 532, 532, 1532;
+                 677, 677, -1323, -1323, 677, 677, -1323, -1323;
+                 2139, 2139, 2139, 2139, 139, 139, 139, 139];
+corner_index = 1;   % 角点索引计数器
+rand_points = [];   % 小球坐标全局变量
+captured_joint_angles = [];  % 用于存储抓取时的关节角度
+garbage_points = [300, 400, 400];  % 垃圾桶坐标
 
-garbage_points = [300, 400, 400];  % 行向量
 
 % ================== 修改后的generate_workspace函数 ==================
 function generate_workspace(corner_points)
@@ -27,7 +29,7 @@ function generate_workspace(corner_points)
     y_lim = [min(corner_points(2,:)), max(corner_points(2,:))];
     z_lim = [min(corner_points(3,:)), max(corner_points(3,:))];
     
-    % 生成7个随机黄色小球并存储到全局变量
+    % 生成10个随机黄色小球并存储到全局变量
     num_balls = 10;
     rand_points = [
         x_lim(1) + (x_lim(2)-x_lim(1))*rand(1,num_balls);
@@ -39,7 +41,7 @@ function generate_workspace(corner_points)
     figure(1); 
     hold on;
     
-    % 1. 绘制工作空间框架
+    %  绘制工作空间框架
     plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); 
     plot3(corner_points(1,[5:8 5]), corner_points(2,[5:8 5]), corner_points(3,[5:8 5]), 'b-');
     for i = 1:4
@@ -61,14 +63,14 @@ function generate_workspace(corner_points)
 end
 
 % ================== 修改后的MOVE_vector函数 ==================
-function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
-    global th1 th2 th3 d4 th5 th6 th7 all_coordinates garbage_points current_index corner_points corner_index rand_points;
+function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, colour)
+    global th1 th2 th3 d4 th5 th6 th7 all_coordinates  current_index rand_points corner_points;
 
     % 设置默认参数（新增colour参数）
     if nargin < 8
         colour = 'b';  % 默认颜色为蓝色
     end
-
+    
     % 动态生成小球位置（如果未初始化）
     if isempty(rand_points)
         warning('rand_points未初始化，生成默认位置');
@@ -89,6 +91,16 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
             % 使用colour参数设置轨迹颜色
             plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:),...
                  [colour '.'], 'MarkerSize', 5);  % 修改此行
+
+            %  绘制工作空间框架
+            plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); 
+            plot3(corner_points(1,[5:8 5]), corner_points(2,[5:8 5]), corner_points(3,[5:8 5]), 'b-');
+            for i = 1:4
+                plot3([corner_points(1,i), corner_points(1,i+4)],...
+                      [corner_points(2,i), corner_points(2,i+4)],...
+                      [corner_points(3,i), corner_points(3,i+4)], 'b-');
+            end
+
             % 动态绘制当前小球位置
             plot3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
                  'oy', 'MarkerSize', 12,...
@@ -119,17 +131,17 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
     end
     
     % ========== 角点存储逻辑 ==========
-    if record_corner  % 使用新参数控制角点记录
-        if corner_index > size(corner_points, 2)
-            error('角点数量超过预分配空间，请扩大corner_points数组');
-        end
-        corner_points(:, corner_index) = xyz;
-        corner_index = corner_index + 1;
-        
-        fprintf('[角点记录] 新增点%d: (%.1f, %.1f, %.1f)\n',...
-                corner_index-1, xyz(1), xyz(2), xyz(3));
-    end
-    
+    % if record_corner  % 使用新参数控制角点记录
+    %     if corner_index > size(corner_points, 2)
+    %         error('角点数量超过预分配空间，请扩大corner_points数组');
+    %     end
+    %     corner_points(:, corner_index) = xyz;
+    %     corner_index = corner_index + 1;
+    % 
+    %     fprintf('[角点记录] 新增点%d: (%.1f, %.1f, %.1f)\n',...
+    %             corner_index-1, xyz(1), xyz(2), xyz(3));
+    % end
+    % 
     if(print)
         fprintf('x= %f, y= %f, z= %f\n', xyz(1), xyz(2), xyz(3));
     end
@@ -141,39 +153,16 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
 end
 % ================== 修改后的workspace函数 ==================
 function workspace()
-    global corner_points rand_points;
-    
-    % 初始化位置（不记录轨迹和角点）
-    MOVE_vector(100, false, 300, 300, 0, false); 
-    
-    % 执行8次边界运动（记录轨迹和角点）
-    MOVE_vector(100, true, 0, 1000, 0, true,'b');
-    MOVE_vector(100, true, 0, 0, -2000, true,'b');
-    MOVE_vector(100, true, 0, -2000, 0, true,'b');
-    MOVE_vector(100, true, 0, 0, 2000, true,'b');
-    MOVE_vector(100, true, -1000, 0, 0, true,'b');
-    MOVE_vector(100, true, 0, 2000, 0, true,'b');
-    MOVE_vector(100, true, 0, 0, -2000, true,'b');
-    MOVE_vector(100, true, 0, -2000, 0, true,'b');
-
+    global corner_points;
     % 生成工作空间
     generate_workspace(corner_points);
-    
-    % 打印角点坐标
-    fprintf('\n======= 工作空间角点坐标 =======\n');
-    for i = 1:size(corner_points,2)
-        fprintf('角点%d: x=%.1f, y=%.1f, z=%.1f\n',...
-                i, corner_points(1,i), corner_points(2,i), corner_points(3,i));
-    end
+
 end
-
-
-% 修改后的move_to_target函数
 function move_to_target(target_x, target_y, target_z)
-    global th1 th2 th3 d4 th5 th6 th7;
+    global th1 th2 th3 d4 th5 th6 th7 rand_points captured_joint_angles corner_points;
     
     % 获取当前坐标
-    current_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6,th7, 0);
+    current_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6, th7, 0);
     
     % 计算位移
     dx = target_x - current_xyz(1);
@@ -181,15 +170,49 @@ function move_to_target(target_x, target_y, target_z)
     dz = target_z - current_xyz(3);
     
     % 执行运动（不记录轨迹和角点）
-    MOVE_vector(100, true, dx, dy, dz, false,'g');
+    MOVE_vector(100, true, dx, dy, dz, 'g');
     
     % 验证最终位置
-    final_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6,th7, 0);
+    final_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6, th7, 0);
     fprintf('\n目标点: (%.1f, %.1f, %.1f)\n实际到达: (%.1f, %.1f, %.1f)\n误差: %.2fmm\n',...
-            target_x, target_y, target_z,...
-            final_xyz(1), final_xyz(2), final_xyz(3),...
+            target_x, target_y, target_z, final_xyz(1), final_xyz(2), final_xyz(3),...
             norm(final_xyz - [target_x; target_y; target_z]));
+    
+    collision_threshold = 20;  % 碰撞检测阈值，根据需要调整
+    distances = sqrt( (rand_points(1,:) - final_xyz(1)).^2 + ...
+                      (rand_points(2,:) - final_xyz(2)).^2 + ...
+                      (rand_points(3,:) - final_xyz(3)).^2 );
+    collided_idx = find(distances < collision_threshold);
+    
+    if ~isempty(collided_idx)
+        fprintf('抓到小球\n');
+        % 打印当前机械臂的关节角度
+        fprintf('当前关节角度: th1=%.2f, th2=%.2f, th3=%.2f, d4=%.2f, th5=%.2f, th6=%.2f, th7=%.2f\n',...
+                th1, th2, th3, d4, th5, th6, th7);
+        % 将当前关节角度保存到全局变量（每列一个记录）
+        captured_joint_angles = [captured_joint_angles, [th1; th2; th3; d4; th5; th6; th7]];
+        
+        % 从 rand_points 中删除该小球
+        rand_points(:, collided_idx(1)) = [];
+        
+        % 更新绘图：清除当前图后重新绘制工作空间和剩余小球
+        cla(gca);
+        plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); 
+        plot3(corner_points(1,[5:8 5]), corner_points(2,[5:8 5]), corner_points(3,[5:8 5]), 'b-');
+        for i = 1:4
+            plot3([corner_points(1,i), corner_points(1,i+4)],...
+                  [corner_points(2,i), corner_points(2,i+4)],...
+                  [corner_points(3,i), corner_points(3,i+4)], 'b-');
+        end
+        hold on;
+        plot3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
+              'oy', 'MarkerSize', 12, 'MarkerFaceColor', 'y',...
+              'MarkerEdgeColor', 'k', 'LineWidth', 1.5);
+        hold off;
+    end
 end
+
+
 
 function sort_rand_points_by_distance()
     global rand_points garbage_points;
@@ -219,7 +242,7 @@ end
 workspace();
 sort_rand_points_by_distance();  % 按距离排序小球
 
-for i = 1:size(rand_points,2)
-    move_to_target(rand_points(1,i), rand_points(2,i), rand_points(3,i));
+while ~isempty(rand_points)
+    % 始终取第一个小球作为目标
+    move_to_target(rand_points(1,1), rand_points(2,1), rand_points(3,1));
 end
-move_to_target(garbage_points(1),garbage_points(2),garbage_points(3));
