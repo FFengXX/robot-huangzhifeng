@@ -60,108 +60,6 @@ function generate_workspace(corner_points)
     title('Workspace with Random Balls');
 end
 
-function path = RRT(start, goal, obstacles, radius)
-    max_iter = 50000;
-    step_size = 100;
-    goal_threshold = 50;
-    bias = 0.1;
-    global corner_points;
-    
-    % 获取工作空间范围
-    x_lim = [min(corner_points(1,:)), max(corner_points(1,:))];
-    y_lim = [min(corner_points(2,:)), max(corner_points(2,:))];
-    z_lim = [min(corner_points(3,:)), max(corner_points(3,:))];
-    
-    % 初始化树
-    nodes = struct('pos', {}, 'parent', {});
-    nodes(1).pos = start;
-    nodes(1).parent = 0;
-    found = false;
-    
-    for iter = 1:max_iter
-        % 生成随机点（带目标偏向）
-        if rand < bias
-            sample = goal;
-        else
-            sample = [
-                x_lim(1) + (x_lim(2)-x_lim(1))*rand();
-                y_lim(1) + (y_lim(2)-y_lim(1))*rand();
-                z_lim(1) + (z_lim(2)-z_lim(1))*rand()
-            ];
-        end
-        
-        % 寻找最近节点
-        [nearest_idx, min_dist] = find_nearest(nodes, sample);
-        nearest_node = nodes(nearest_idx).pos;
-        
-        % 生成新节点
-        direction = sample - nearest_node;
-        distance = norm(direction);
-        if distance > step_size
-            new_node = nearest_node + direction/distance*step_size;
-        else
-            new_node = sample;
-        end
-        
-        % 碰撞检测
-        if ~collision_check(nearest_node, new_node, obstacles, radius)
-            % 添加新节点
-            new_idx = length(nodes)+1;
-            nodes(new_idx).pos = new_node;
-            nodes(new_idx).parent = nearest_idx;
-            
-            % 检查目标
-            if norm(new_node - goal) < goal_threshold
-                found = true;
-                break;
-            end
-        end
-    end
-    
-    if ~found
-        error('Path not found');
-    end
-    
-    % 回溯路径
-    path = [];
-    current_idx = new_idx;
-    while current_idx ~= 0
-        path = [nodes(current_idx).pos, path];
-        current_idx = nodes(current_idx).parent;
-    end
-end
-
-function [idx, min_dist] = find_nearest(nodes, sample)
-    min_dist = inf;
-    idx = 1;
-    for i = 1:length(nodes)
-        d = norm(nodes(i).pos - sample);
-        if d < min_dist
-            min_dist = d;
-            idx = i;
-        end
-    end
-end
-
-function collision = collision_check(p1, p2, obstacles, r)
-    collision = false;
-    for i = 1:size(obstacles,2)
-        % 计算线段到球心的最小距离
-        v = p2 - p1;
-        u = obstacles(:,i) - p1;
-        t = dot(v,u)/dot(v,v);
-        t = max(0, min(1,t));
-        closest = p1 + t*v;
-        dist = norm(closest - obstacles(:,i));
-        
-        if dist < r
-            collision = true;
-            return;
-        end
-    end
-end
-
-
 % ================== 修改后的MOVE_vector函数 ==================
 function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
     global th1 th2 th3 d4 th5 th6 th7 all_coordinates garbage_points current_index corner_points corner_index rand_points;
@@ -272,35 +170,27 @@ end
 
 % 修改后的move_to_target函数
 function move_to_target(target_x, target_y, target_z)
-    global th1 th2 th3 d4 th5 th6 th7 rand_points;
+    global th1 th2 th3 d4 th5 th6 th7;
     
     % 获取当前坐标
-    current_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6, th7, 0);
+    current_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6,th7, 0);
     
-    % RRT参数设置
-    start = current_xyz;
-    goal = [target_x; target_y; target_z];
-    obstacles = rand_points;
-    radius = 30;  % 小球碰撞半径
+    % 计算位移
+    dx = target_x - current_xyz(1);
+    dy = target_y - current_xyz(2);
+    dz = target_z - current_xyz(3);
     
-    % 路径规划
-    try
-        path = RRT(start, goal, obstacles, radius);
-    catch
-        error('路径规划失败');
-    end
+    % 执行运动（不记录轨迹和角点）
+    MOVE_vector(100, true, dx, dy, dz, false,'g');
     
-    % 沿路径移动
-    for i = 1:size(path,2)-1
-        delta = path(:,i+1) - path(:,i);
-        MOVE_vector(50, true, delta(1), delta(2), delta(3), false, 'g');
-    end
-    
-    % 移除已抓取的小球
-    dist = sum((rand_points - goal).^2);
-    [~, idx] = min(dist);
-    rand_points(:,idx) = [];
+    % 验证最终位置
+    final_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6,th7, 0);
+    fprintf('\n目标点: (%.1f, %.1f, %.1f)\n实际到达: (%.1f, %.1f, %.1f)\n误差: %.2fmm\n',...
+            target_x, target_y, target_z,...
+            final_xyz(1), final_xyz(2), final_xyz(3),...
+            norm(final_xyz - [target_x; target_y; target_z]));
 end
+
 function sort_rand_points_by_distance()
     global rand_points garbage_points;
     
