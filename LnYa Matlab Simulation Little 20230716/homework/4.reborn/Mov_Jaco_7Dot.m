@@ -1,15 +1,15 @@
 close all;
 clear;
-global th1 th2 th3 th4 d5 th6 th7 garbage_points all_coordinates current_index corner_points corner_index rand_points;
+global th1 th2 th3 d4 th5 th6 th7 garbage_points all_coordinates current_index corner_points corner_index rand_points;
 
 % 初始化全局变量
-th1 = 0;
-th2 = 90;
-th3 = 0;
-th4 = 0;
-d5 = 0;
-th6 = 0;
-th7 = 0;
+th1=0;
+th2=90;
+th3=0;
+d4=0;
+th5=0;
+th6=0;
+th7=-90;
 current_index = 1;
 all_coordinates = zeros(3, 100000);  % 轨迹存储数组
 corner_points = zeros(3, 8);        % 角点存储数组（固定8列）
@@ -164,7 +164,7 @@ end
 
 % ================== 修改后的MOVE_vector函数 ==================
 function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_corner, colour)
-    global th1 th2 th3 th4 d5 th6 th7 all_coordinates garbage_points current_index corner_points corner_index rand_points;
+    global th1 th2 th3 d4 th5 th6 th7 all_coordinates garbage_points current_index corner_points corner_index rand_points;
 
     % 设置默认参数（新增colour参数）
     if nargin < 8
@@ -197,24 +197,15 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
                  'MarkerFaceColor', 'y',...
                  'MarkerEdgeColor', 'k',...
                  'LineWidth', 1.5);
-
-            %绘制垃圾桶位置
-            plot3(garbage_points(1), garbage_points(2), garbage_points(3),...
-                  's',...  % 方形标记（s = square）
-                  'MarkerSize', 30,...
-                  'MarkerFaceColor', 'g',...
-                  'MarkerEdgeColor', 'k',...
-                  'LineWidth', 1.5);
         end
-        
-        xyz = DHfk7Dof_Lnya(th1, th2, th3, th4, d5, th6,th7, 0);
+        xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6,th7, 0);
         all_xyz(:, i) = xyz;
-        
+
         if print
             all_coordinates(:, current_index:current_index+times-1) = all_xyz;
         end
 
-        J = Jacobian7DoF_Ln(th1, th2, th3, th4, d5, th6,th7); 
+        J = Jacobian7DoF_Ln(th1, th2, th3, d4, th5, th6,th7); 
         
         dD = [step_x, step_y, step_z, 0, 0, 0]';
         dth = pinv(J) * dD;
@@ -222,8 +213,8 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, record_c
         th1 = th1 + dth(1) * 180/pi;
         th2 = th2 + dth(2) * 180/pi;
         th3 = th3 + dth(3) * 180/pi;
-        th4 = th4 + dth(4) * 180/pi;
-        d5 = d5 + dth(5);
+        d4  = d4  + dth(4) * 180/pi;
+        th5 = th5 + dth(5) * 180/pi;
         th6 = th6 + dth(6) * 180/pi;
         th7 = th7 + dth(7) * 180/pi;
         drawnow limitrate;
@@ -255,7 +246,7 @@ function workspace()
     global corner_points rand_points;
     
     % 初始化位置（不记录轨迹和角点）
-    MOVE_vector(100, false, 600, 600, 0, false); 
+    MOVE_vector(100, false, 300, 300, 0, false); 
     
     % 执行8次边界运动（记录轨迹和角点）
     MOVE_vector(100, true, 0, 1000, 0, true,'b');
@@ -281,10 +272,10 @@ end
 
 % 修改后的move_to_target函数
 function move_to_target(target_x, target_y, target_z)
-    global th1 th2 th3 th4 d5 th6 th7 rand_points;
+    global th1 th2 th3 d4 th5 th6 th7 rand_points;
     
     % 获取当前坐标
-    current_xyz = DHfk7Dof_Lnya(th1, th2, th3, th4, d5, th6, th7, 0);
+    current_xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6, th7, 0);
     
     % RRT参数设置
     start = current_xyz;
