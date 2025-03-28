@@ -99,59 +99,9 @@ for i = 1:size(nijiao, 1)
     [path,ret] = Path_planning(start_q, goal_q, obstacles);
     founditerations = [];
     if(~ret)
-        break;
+        print('失败');
     end
     % 正向遍历路径中的每个节点（从起始点到目标点）
-    for j = 1:size(path, 1)
-        target_angles = path(j, :);
-        
-        % 更新关节角度
-        th1 = target_angles(1);
-        th2 = target_angles(2);
-        th3 = target_angles(3);
-        th4 = target_angles(4);
-        th5 = target_angles(5);
-        th6 = target_angles(6);
-        th7 = target_angles(7);  
-        
-        % 使用运动学模型计算机械臂末端执行器位置
-        points = DHfk7Dof_Lnya2(th1, th2, th3, th4, th5, th6, th7,1);  
-        end_effector_x = points(1);
-        end_effector_y = points(2);
-        end_effector_z = points(3);
-
-        
-        % 重新绘制小球和盒子
-        cla; % 清除当前窗口的所有图形
-        patch('Vertices', vertices, 'Faces', faces, 'FaceColor', 'none', 'FaceAlpha', 0.1, 'EdgeColor', 'blue');
-        
-        % 检查机械臂末端是否接近小球
-        for k = size(qiuwzhi, 1):-1:1
-            center_x = qiuwzhi(k, 1);
-            center_y = qiuwzhi(k, 2);
-            center_z = qiuwzhi(k, 3);
-            
-            % 计算机械臂末端与小球的距离
-            distance = sqrt((end_effector_x - center_x)^2 + ...
-                            (end_effector_y - center_y)^2 + ...
-                            (end_effector_z - center_z)^2);
-            
-            % 如果距离小于阈值，移除小球
-            if distance < threshold
-                if ishandle(ball_handles(k)) % 检查句柄是否有效
-                    delete(ball_handles(k)); % 删除小球的图形
-                end
-                qiuwzhi(k, :) = []; % 从矩阵中移除小球的位置
-                ball_handles(k) = []; % 从句柄数组中移除小球的句柄
-                drawnow; % 立即更新图形
-            else
-                % 否则，重新绘制小球
-                surf(x * sphere_radius + center_x, ...
-                     y * sphere_radius + center_y, ...
-                     z * sphere_radius + center_z, ...
-                     'EdgeColor', 'k', 'FaceColor', 'y');
-            end
-        end
     end
 
     % 回到原点，逆向遍历路径
@@ -201,7 +151,7 @@ for i = 1:size(nijiao, 1)
                      y * sphere_radius + center_y, ...
                      z * sphere_radius + center_z, ...
                      'EdgeColor', 'k', 'FaceColor', 'y');
-            end
+            
         end
     end
 end
