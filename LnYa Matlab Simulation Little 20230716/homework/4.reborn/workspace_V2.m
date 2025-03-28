@@ -187,3 +187,40 @@ ylabel('Y');
 title('Z=0 的 X-Y 剖面图');
 axis equal;
 hold off;
+
+%% ------------- 在figure1上绘制长方体线框 -------------
+corner_points = [1532, 532, 532, 1532, 1532, 532, 532, 1532;
+                 677, 677, -1323, -1323, 677, 677, -1323, -1323;
+                 2139, 2139, 2139, 2139, 139, 139, 139, 139];
+
+% 转置矩阵，使每行代表一个点的[x,y,z]坐标
+corner_points = corner_points';
+
+% 定义长方体边的连接顺序（顶点索引对）
+edges = [1 2; 2 3; 3 4; 4 1;   % 底面四边形
+         5 6; 6 7; 7 8; 8 5;   % 顶面四边形
+         1 5; 2 6; 3 7; 4 8];  % 侧面连接线
+
+% 切换到figure1并保持当前图形
+figure(1);
+hold on;
+
+% 绘制所有边
+for i = 1:size(edges, 1)
+    % 获取当前边的起点和终点索引
+    start_idx = edges(i, 1);
+    end_idx = edges(i, 2);
+    
+    % 提取起点和终点的坐标
+    x = [corner_points(start_idx, 1), corner_points(end_idx, 1)];
+    y = [corner_points(start_idx, 2), corner_points(end_idx, 2)];
+    z = [corner_points(start_idx, 3), corner_points(end_idx, 3)];
+    
+    % 绘制线段
+    plot3(x, y, z, 'b-', 'LineWidth', 2);
+end
+
+hold off;
+grid on;
+rotate3d on;
+axis equal;  % 保持坐标轴比例一致
