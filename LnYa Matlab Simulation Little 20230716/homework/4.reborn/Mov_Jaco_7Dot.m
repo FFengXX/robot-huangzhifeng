@@ -1,6 +1,6 @@
 close all;
 clear;
-global th1 th2 th3 d4 th5 th6 th7 garbage_points all_coordinates current_index corner_points corner_index rand_points captured_joint_angles;
+global th1 th2 th3 d4 th5 th6 th7 garbage_points current_index corner_points corner_index rand_points captured_joint_angles;
 % 初始化全局变量
 th1=0;
 th2=90;
@@ -9,39 +9,50 @@ d4=0;
 th5=0;
 th6=0;
 th7=-90;
+start_q = [0, 90, 0, 0, 0, 0, -90];  
+
 current_index = 1;
-all_coordinates = zeros(3, 100000);  % 轨迹存储数组
+
 corner_points = [1532, 532, 532, 1532, 1532, 532, 532, 1532;
                  677, 677, -1323, -1323, 677, 677, -1323, -1323;
                  2139, 2139, 2139, 2139, 139, 139, 139, 139];
+% 小球的笛卡尔坐标系坐标数组
+rand_points =     [818.0, 714.1,  1077.0, 899.5,  1433.4, 1268.5, 1449.7, 1344.9, 695.3,  1263.0;
+                   136.2, -243.6, -102.2, -226.2, -15.1,  211.0,  -738.5, -715.6, -770.5, 551.0;
+                   895.5, 537.3,  1121.8, 1302.8, 1217.8, 1635.9, 535.4,  1298.6, 1725.7, 2013.2];
+% 小球的关节角坐标数组
+ball_joint_positions = [
+    -38.81, 104.15, 45.54, 0.55, -153.36, -41.78, 22.99;  % 小球1
+    -14.73, 130.86, 38.85, -12.04, -202.16, -31.98, 80.42; % 小球2
+    -35.44, 82.80, -23.03, 24.23, -94.80, -29.92, 32.26;   % 小球3
+    -52.11, 75.30, -27.64, 26.53, -73.74, -40.99, 14.27;   % 小球4
+    -31.74, 65.95, -29.94, 29.90, -71.02, -17.63, 8.79;    % 小球5
+    -24.29, 84.17, -36.90, 7.19, -53.69, -20.08, 0.62;     % 小球6
+    -31.08, -14.02, -24.03, 78.23, -17.54, -24.52, -79.42; % 小球7
+    -58.40, 31.66, -53.29, 54.36, -24.84, -20.48, -41.35;  % 小球8
+    -95.67, 52.90, -97.42, 47.40, 5.36, -46.31, -41.04;    % 小球9
+    -49.23, 89.20, -90.63, 44.21, 7.35, -4.32, -7.33       % 小球10
+];
+
 corner_index = 1;   % 角点索引计数器
-rand_points = [];   % 小球坐标全局变量
 captured_joint_angles = [];  % 用于存储抓取时的关节角度
-garbage_points = [300, 400, 400];  % 垃圾桶坐标
+garbage_points = [532, -1323, 2139];  % 垃圾桶坐标
 
 
 % ================== 修改后的generate_workspace函数 ==================
 function generate_workspace(corner_points)
     global rand_points;  % 声明全局变量
     
-    % 计算工作空间范围
-    x_lim = [min(corner_points(1,:)), max(corner_points(1,:))];
-    y_lim = [min(corner_points(2,:)), max(corner_points(2,:))];
-    z_lim = [min(corner_points(3,:)), max(corner_points(3,:))];
-    
-    % 生成10个随机黄色小球并存储到全局变量
-    num_balls = 10;
-    rand_points = [
-        x_lim(1) + (x_lim(2)-x_lim(1))*rand(1,num_balls);
-        y_lim(1) + (y_lim(2)-y_lim(1))*rand(1,num_balls);
-        z_lim(1) + (z_lim(2)-z_lim(1))*rand(1,num_balls)
-    ];
+    % 固定的小球坐标（每列为一个小球的[x; y; z]）
+    rand_points = [818.0, 714.1, 1077.0, 899.5, 1433.4, 1268.5, 1449.7, 1344.9, 695.3, 1263.0;
+                   136.2, -243.6, -102.2, -226.2, -15.1, 211.0, -738.5, -715.6, -770.5, 551.0;
+                   895.5, 537.3, 1121.8, 1302.8, 1217.8, 1635.9, 535.4, 1298.6, 1725.7, 2013.2];
     
     % 获取当前figure1的句柄并保持绘图
     figure(1); 
     hold on;
     
-    %  绘制工作空间框架
+    % 绘制工作空间框架
     plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); 
     plot3(corner_points(1,[5:8 5]), corner_points(2,[5:8 5]), corner_points(3,[5:8 5]), 'b-');
     for i = 1:4
@@ -50,7 +61,7 @@ function generate_workspace(corner_points)
               [corner_points(3,i), corner_points(3,i+4)], 'b-');
     end
     
-    % 2. 绘制黄色小球
+    % 绘制固定的小球
     plot3(rand_points(1,:), rand_points(2,:), rand_points(3,:),...
          'oy', 'MarkerSize', 12,...
          'MarkerFaceColor', 'y',...
@@ -59,8 +70,9 @@ function generate_workspace(corner_points)
     
     axis equal; grid on;
     xlabel('x'); ylabel('y'); zlabel('z');
-    title('Workspace with Random Balls');
+    title('Workspace with Fixed Balls');
 end
+
 
 % ================== 修改后的MOVE_vector函数 ==================
 function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, colour)
@@ -88,9 +100,6 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, colour)
     for i = 1:times
         cla(gca);  
         if print
-            % 使用colour参数设置轨迹颜色
-            plot3(all_coordinates(1,:), all_coordinates(2,:), all_coordinates(3,:),...
-                 [colour '.'], 'MarkerSize', 5);  % 修改此行
 
             %  绘制工作空间框架
             plot3(corner_points(1,[1:4 1]), corner_points(2,[1:4 1]), corner_points(3,[1:4 1]), 'b-'); 
@@ -111,9 +120,6 @@ function [all_xyz2, t] = MOVE_vector(times, print, len_x, len_y, len_z, colour)
         xyz = DHfk7Dof_Lnya2(th1, th2, th3, d4, th5, th6,th7, 0);
         all_xyz(:, i) = xyz;
 
-        if print
-            all_coordinates(:, current_index:current_index+times-1) = all_xyz;
-        end
 
         J = Jacobian7DoF_Ln(th1, th2, th3, d4, th5, th6,th7); 
         
@@ -238,6 +244,7 @@ function sort_rand_points_by_distance()
                 rand_points(1,i), rand_points(2,i), rand_points(3,i));
     end
 end
+
 % ================== 主程序 ==================
 workspace();
 sort_rand_points_by_distance();  % 按距离排序小球
