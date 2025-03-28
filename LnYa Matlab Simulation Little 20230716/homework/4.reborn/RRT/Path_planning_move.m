@@ -74,7 +74,7 @@ for i = 1:size(qiuwzhi, 1)
     ball_handles(i) = surf(x * sphere_radius + center_x, ...
                            y * sphere_radius + center_y, ...
                            z * sphere_radius + center_z, ...
-                           'EdgeColor', 'y', 'FaceColor', 'y');
+                           'EdgeColor', 'k', 'FaceColor', 'y');
 end
 
 % 设置图形属性
@@ -96,9 +96,11 @@ for i = 1:size(nijiao, 1)
     goal_q = nijiao(i, :);
     
     % 调用 RRT4 函数
-    [path] = Path_planning(start_q, goal_q, obstacles);
+    [path,ret] = Path_planning(start_q, goal_q, obstacles);
     founditerations = [];
-    
+    if(~ret)
+        break;
+    end
     % 正向遍历路径中的每个节点（从起始点到目标点）
     for j = 1:size(path, 1)
         target_angles = path(j, :);
@@ -147,7 +149,7 @@ for i = 1:size(nijiao, 1)
                 surf(x * sphere_radius + center_x, ...
                      y * sphere_radius + center_y, ...
                      z * sphere_radius + center_z, ...
-                     'EdgeColor', 'y', 'FaceColor', 'y');
+                     'EdgeColor', 'k', 'FaceColor', 'y');
             end
         end
     end
@@ -198,7 +200,7 @@ for i = 1:size(nijiao, 1)
                 surf(x * sphere_radius + center_x, ...
                      y * sphere_radius + center_y, ...
                      z * sphere_radius + center_z, ...
-                     'EdgeColor', 'y', 'FaceColor', 'y');
+                     'EdgeColor', 'k', 'FaceColor', 'y');
             end
         end
     end
